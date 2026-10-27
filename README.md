@@ -65,12 +65,12 @@ Clone this repo wherever you like, `cd` into it, and run each step from the repo
 6. Create the launchd job, which runs the wrapper every 60 seconds and once at login:
 
    ```sh
-   cat > ~/Library/LaunchAgents/com.eventsprout.pr-review.plist <<EOF
+   cat > ~/Library/LaunchAgents/local.pr-review.watcher.plist <<EOF
    <?xml version="1.0" encoding="UTF-8"?>
    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
    <plist version="1.0">
    <dict>
-       <key>Label</key><string>com.eventsprout.pr-review</string>
+       <key>Label</key><string>local.pr-review.watcher</string>
        <key>ProgramArguments</key>
        <array>
            <string>/bin/zsh</string>
@@ -88,7 +88,7 @@ Clone this repo wherever you like, `cd` into it, and run each step from the repo
 7. Start it:
 
    ```sh
-   launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.eventsprout.pr-review.plist
+   launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/local.pr-review.watcher.plist
    ```
 
 If you move the repo later, re-run step 3 to point the skill link at the new location; the wrapper follows it.
@@ -107,8 +107,8 @@ Once loaded, the watcher needs nothing from you. Each tick logs a line such as `
 | Run one watcher tick now | `zsh ~/.claude/scripts/pr-review-watch.sh` |
 | Watch a review in progress | `screen -r pr-review-<id>` (detach with Ctrl-A D) |
 | Re-baseline open PRs, keeping review history | `pr-review seed --force` |
-| Pause the watcher | `launchctl bootout gui/$(id -u)/com.eventsprout.pr-review` |
-| Resume the watcher | `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.eventsprout.pr-review.plist` |
+| Pause the watcher | `launchctl bootout gui/$(id -u)/local.pr-review.watcher` |
+| Resume the watcher | `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/local.pr-review.watcher.plist` |
 
 The `prepare`, `render` and `finish` commands are steps the skill runs itself, and `guard` is the permission hook; you don't call them directly.
 
