@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PR review",
+  "description": "Documentation only. prreview/render.py validate_review is the enforcing implementation.",
+  "type": "object",
+  "required": ["summary", "one_line", "findings", "fixed"],
+  "properties": {
+    "summary": {"type": "string", "minLength": 1},
+    "one_line": {"type": "string", "minLength": 1, "maxLength": 200},
+    "too_large": {"type": "boolean"},
+    "fixed": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Ids from context.earlier_findings that are resolved. Must be empty in a full review."
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["severity", "title", "file", "line", "breaks_when", "fix"],
+        "properties": {
+          "severity": {"enum": ["critical", "should_fix", "nit"]},
+          "title": {"type": "string", "minLength": 1},
+          "file": {"type": "string", "minLength": 1},
+          "line": {"type": "integer", "minimum": 1},
+          "breaks_when": {"type": "string", "minLength": 1},
+          "fix": {"type": "string", "minLength": 1},
+          "fix_code": {"type": "string"},
+          "reproduce": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Test and/or reproduction instructions. Required when severity is critical or should_fix."
+          },
+          "test_code": {"type": "string"}
+        },
+        "if": {"properties": {"severity": {"enum": ["critical", "should_fix"]}}},
+        "then": {"required": ["reproduce"]}
+      }
+    }
+  }
+}

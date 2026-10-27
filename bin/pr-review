@@ -1,0 +1,23 @@
+#!/usr/bin/python3 -I
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+
+def guard() -> int:
+    try:
+        from prreview.guard import main as guard_main
+
+        return 0 if guard_main(sys.argv[2:], sys.stdin) == 0 else 2
+    except BaseException as error:
+        print("pr-review guard: failed closed: %s" % type(error).__name__, file=sys.stderr)
+        return 2
+
+
+if sys.argv[1:2] == ["guard"]:
+    sys.exit(guard())
+
+from prreview.cli import main
+
+sys.exit(main())
