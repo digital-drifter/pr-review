@@ -64,7 +64,7 @@ BLOCKERS = (
         "usage limit reached", "hit your limit", "you've hit your", "spend limit reached", "out of extra usage",
         "credit balance is too low",
     )),
-    (TRUST_REASON, ("trust this folder",)),
+    (TRUST_REASON, ("trust this folder", "your answer holds for this session")),
 )
 BLOCKER_REGION_LINES = 8
 _reviewing: List[Tuple[PullRequest, State]] = []
@@ -288,6 +288,7 @@ def claude_command(context_path: Path, ws: Workspace, claude_bin: str, settings_
     allowed = " ".join([
         "Skill(pr-auto-review)", "Agent", "Artifact",
         "Read(%s)" % _path_rule(str(USER_CLAUDE_MD)),
+        "Read(%s/**)" % _path_rule(str(Path(MEMORY_INDEX).parent)),
         "Grep(%s/**)" % tree,
         "Glob(%s/**)" % tree,
         "Bash(%s)" % render_command(ws.run_dir),
@@ -305,7 +306,6 @@ def claude_command(context_path: Path, ws: Workspace, claude_bin: str, settings_
         "--setting-sources", "user",
         "--settings", str(settings_path.absolute()),
         "--add-dir", run_dir,
-        "--add-dir", str(Path(MEMORY_INDEX).parent),
         "--allowedTools", allowed,
         "--disallowedTools", denied,
     ]

@@ -1057,6 +1057,14 @@ class FindBlockerTest(unittest.TestCase):
             ("You've hit y\nour weekly limit", runner.USAGE_REASON),
             ("Usage limit reached · continuing automatically at 5pm", runner.USAGE_REASON),
             ("Quick safety check\n Yes, I trust this folder\n No, exit", runner.TRUST_REASON),
+            (
+                " Adding a new directory:\n /srv/elsewhere\n This session hasn't worked here before. Is this a"
+                " directory you created or one\n you trust?\n Claude Code'll be able to read, edit, and execute"
+                " files here. Its skills,\n commands, and agents load and can run commands, and so can the git"
+                " settings of\n its repository. Your answer holds for this session.\n Security guide\n"
+                " > No, exit\n   Yes, add it\n Enter to confirm · Esc to cancel",
+                runner.TRUST_REASON,
+            ),
             ("Login expired · Please run\n/login", runner.LOGIN_REASON),
             ("Login expired · Please run /lo\ngin", runner.LOGIN_REASON),
         ]
@@ -1171,9 +1179,10 @@ class ClaudeSessionTest(unittest.TestCase):
         render = "/usr/bin/python3 -I %s render %s/context.json %s/review.json" % (BIN, run_dir, run_dir)
         allowed = (
             "Skill(pr-auto-review) Agent Artifact Read(%s/.claude/CLAUDE.md) "
+            "Read(%s/.claude/projects/-srv-acme-widgets/memory/**) "
             "Grep(%s/**) Glob(%s/**) Bash(%s) "
             "Write(%s/review.json) Edit(%s/review.json) Write(%s/result.json) Edit(%s/result.json)"
-            % (HOME_RULE, tree, tree, render, rule, rule, rule, rule)
+            % (HOME_RULE, HOME_RULE, tree, tree, render, rule, rule, rule, rule)
         )
         self.assertEqual(json.loads(context_path.read_text())["render_command"], render)
         self.assertNotIn("*", render)
@@ -1189,7 +1198,6 @@ class ClaudeSessionTest(unittest.TestCase):
             "--setting-sources", "user",
             "--settings", "%s/session-settings.json" % run_dir,
             "--add-dir", run_dir,
-            "--add-dir", str(Path.home() / ".claude/projects/-srv-acme-widgets/memory"),
             "--allowedTools", allowed,
             "--disallowedTools", denied,
         ])
@@ -1238,7 +1246,10 @@ class ClaudeSessionTest(unittest.TestCase):
         for bare in ("Read", "Grep", "Glob", "Skill", "Bash", "Write", "Edit"):
             self.assertNotIn(bare, allowed)
         self.assertIn("Skill(pr-auto-review)", allowed)
-        self.assertEqual([rule for rule in allowed if rule.startswith("Read(")], ["Read(%s/.claude/CLAUDE.md)" % HOME_RULE])
+        self.assertEqual([rule for rule in allowed if rule.startswith("Read(")], [
+            "Read(%s/.claude/CLAUDE.md)" % HOME_RULE,
+            "Read(%s/.claude/projects/-srv-acme-widgets/memory/**)" % HOME_RULE,
+        ])
         tree = "//" + str(ws.worktree).lstrip("/")
         self.assertEqual(
             [rule for rule in allowed if rule.startswith(("Grep(", "Glob("))], ["Grep(%s/**)" % tree, "Glob(%s/**)" % tree]
